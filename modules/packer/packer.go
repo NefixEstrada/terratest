@@ -7,6 +7,7 @@ import (
 	"os"
 	"path/filepath"
 	"regexp"
+	"strings"
 	"sync"
 	"time"
 
@@ -186,7 +187,11 @@ func hasPackerInit(t testing.TestingT, options *Options) (bool, error) {
 		Env:        options.Env,
 		WorkingDir: options.WorkingDir,
 	}
-	localVersion, err := shell.RunCommandAndGetOutputE(t, cmd)
+	versionCmdOutput, err := shell.RunCommandAndGetOutputE(t, cmd)
+	if err != nil {
+		return false, err
+	}
+	localVersion := trimPackerVersion(versionCmdOutput)
 	if err != nil {
 		return false, err
 	}
@@ -269,4 +274,7 @@ func formatPackerArgs(options *Options) []string {
 	}
 
 	return append(args, options.Template)
+}
+func trimPackerVersion(versionCmdOutput string) string {
+	return strings.Replace(versionCmdOutput, "Packer v", "", -1)
 }
